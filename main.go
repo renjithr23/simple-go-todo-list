@@ -1,16 +1,38 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
 
 	"github.com/gorilla/mux"
 )
 
+type Configuration struct {
+	Port             int
+	StorageType      string
+	ConnectionString string
+}
+
 func main() {
 
-	stg, err := NewStorage(Memory)
+	var config Configuration
+
+	file, err := os.Open("./conf.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+	decoder := json.NewDecoder(file)
+	err = decoder.Decode(&config)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	stg, err := NewStorage(StorageType(config.StorageType))
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -24,6 +46,8 @@ func main() {
 
 	// Starting the Server
 	fmt.Println("The beer server is on tap at http://localhost:8080.")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Print(http.ListenAndServe(":"+strconv.Itoa(config.Port), nil))
+
+	stg.DeleteStorage()
 
 }

@@ -1,9 +1,9 @@
 package main
 
 type Todo struct {
-	Id          int
-	Name        string
-	Description string
+	Id          int    `bson:"_id,omitempty"`
+	Name        string `bson:"name"`
+	Description string `bson:"description"`
 }
 
 // func deleteTodo(id int, todos []Todo) []Todo {

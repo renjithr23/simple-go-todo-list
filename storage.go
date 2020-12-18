@@ -1,10 +1,10 @@
 package main
 
-type StorageType int
+type StorageType string
 
 const (
-	Memory StorageType = iota
-	Mongodb
+	Memory  StorageType = "Memory"
+	Mongodb StorageType = "Mongodb"
 )
 
 type Storage interface {
@@ -13,6 +13,7 @@ type Storage interface {
 	DeleteTodo(int) error
 	UpdateTodo(Todo) error
 	ListTodo() ([]Todo, error)
+	DeleteStorage()
 }
 
 func NewStorage(storageType StorageType) (Storage, error) {
@@ -23,10 +24,8 @@ func NewStorage(storageType StorageType) (Storage, error) {
 	case Memory:
 		stg = new(StorageMemory)
 
-		// case Mongodb:
-		// 	stg = new(StorageMongoDB)
+	case Mongodb:
+		stg, err = NewStorageMongodb()
 	}
-
 	return stg, err
-
 }

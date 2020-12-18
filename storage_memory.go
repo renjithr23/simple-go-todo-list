@@ -8,6 +8,10 @@ type StorageMemory struct {
 	todos []Todo
 }
 
+func (s *StorageMemory) DeleteStorage() {
+	s.todos = nil
+}
+
 func (s *StorageMemory) GetTodo(id int) (Todo, error) {
 
 	for _, todo := range s.todos {
