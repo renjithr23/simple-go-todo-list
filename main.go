@@ -32,7 +32,6 @@ func main() {
 	}
 
 	stg, err := NewStorage(StorageType(config.StorageType))
-
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -49,5 +48,4 @@ func main() {
 	log.Print(http.ListenAndServe(":"+strconv.Itoa(config.Port), nil))
 
 	stg.DeleteStorage()
-
 }

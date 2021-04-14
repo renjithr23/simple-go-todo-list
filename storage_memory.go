@@ -21,11 +21,9 @@ func (s *StorageMemory) GetTodo(id int) (Todo, error) {
 	}
 
 	return Todo{}, errors.New("Todo Not found")
-
 }
 
 func (s *StorageMemory) DeleteTodo(id int) error {
-
 	var exists bool = false
 
 	for j, todo := range s.todos {
@@ -42,19 +40,14 @@ func (s *StorageMemory) DeleteTodo(id int) error {
 	}
 
 	return nil
-
 }
 
 func (s *StorageMemory) CreateTodo(todo Todo) error {
-
 	s.todos = append(s.todos, todo)
-
 	return nil
-
 }
 
 func (s *StorageMemory) UpdateTodo(update_todo Todo) error {
-
 	var exists bool = false
 
 	for j, todo := range s.todos {
@@ -70,11 +63,8 @@ func (s *StorageMemory) UpdateTodo(update_todo Todo) error {
 	}
 
 	return nil
-
 }
 
 func (s *StorageMemory) ListTodo() ([]Todo, error) {
-
 	return s.todos, nil
-
 }
