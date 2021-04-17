@@ -1,5 +1,5 @@
 {
     "Port": 8080,
     "ConnectionString": "<<Add Mongodb connection URL Here>>",
-    "StorageType": "Mongodb"
+    "StorageType": "Memory"
 }
