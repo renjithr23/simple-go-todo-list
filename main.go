@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/go-openapi/runtime/middleware"
 	"github.com/gorilla/mux"
 )
 
@@ -19,6 +20,7 @@ type Configuration struct {
 
 func main() {
 
+	// Reading and decoding configuraiotn files
 	var config Configuration
 
 	file, err := os.Open("./conf.json")
@@ -31,21 +33,32 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Initializeing Storage Type.
 	stg, err := NewStorage(StorageType(config.StorageType))
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// Defyning Routes for Todo Resource
 	r := mux.NewRouter()
 
 	r.HandleFunc("/todos", GetTodos(stg)).Methods("GET")
-	r.HandleFunc("/todos/delete/{id}", DeleteTodo(stg)).Methods("GET")
-	r.HandleFunc("/todos/add", AddTodo(stg)).Methods("POST")
+	r.HandleFunc("/todos/{id}", DeleteTodo(stg)).Methods("DELETE")
+	r.HandleFunc("/todos", AddTodo(stg)).Methods("POST")
 	http.Handle("/", r)
+
+	// Defining routes that serve the swagger UI
+	getR := r.Methods(http.MethodGet).Subrouter()
+	ops := middleware.RedocOpts{SpecURL: "/swagger.yaml"}
+	sh := middleware.Redoc(ops, nil)
+
+	getR.Handle("/docs", sh)
+	getR.Handle("/swagger.yaml", http.FileServer(http.Dir("./")))
 
 	// Starting the Server
 	fmt.Println("The beer server is on tap at http://localhost:8080.")
 	log.Print(http.ListenAndServe(":"+strconv.Itoa(config.Port), nil))
 
+	// Cleanig up
 	stg.DeleteStorage()
 }
