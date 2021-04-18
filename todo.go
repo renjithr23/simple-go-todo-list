@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/gorilla/mux"
 )
 
@@ -27,10 +28,10 @@ func GetTodos(storage Storage) func(w http.ResponseWriter, r *http.Request) {
 		todos, err := storage.ListTodo()
 
 		w.Header().Set("Content-Type", "application/json")
-		response, err := json.Marshal(todos)
+		response, _ := json.Marshal(todos)
 		if err != nil {
 			log.Print(err)
-			err_response, _ := json.Marshal(GenericError{"Server error"})
+			err_response, _ := json.Marshal(InternalServerError("InternalServer Error"))
 
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write(err_response)
@@ -66,7 +67,7 @@ func DeleteTodo(storage Storage) func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		if err != nil {
 			log.Print(err)
-			err_response, _ := json.Marshal(GenericError{"Todo with ID " + strconv.Itoa(id) + " does not exist"})
+			err_response, _ := json.Marshal(BadRequestError("Todo with ID " + strconv.Itoa(id) + " does not exist"))
 
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write(err_response)
@@ -74,6 +75,8 @@ func DeleteTodo(storage Storage) func(w http.ResponseWriter, r *http.Request) {
 		}
 
 		w.WriteHeader(http.StatusOK)
+		response, _ := json.Marshal(DeletedResponse("Todo with ID " + strconv.Itoa(id) + " is deleted"))
+		w.Write(response)
 	}
 }
 
@@ -94,59 +97,27 @@ func AddTodo(storage Storage) func(w http.ResponseWriter, r *http.Request) {
 		var t Todo
 		err := json.NewDecoder(r.Body).Decode(&t)
 
+		errs := validation.ValidateStruct(&t,
+			validation.Field(&t.Name, validation.Required),
+			validation.Field(&t.Description, validation.Required),
+		)
+		if errs != nil {
+			err_response, _ := json.Marshal(InvalidInputError(errs.(validation.Errors)))
+
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write(err_response)
+			return
+		}
+
 		if err != nil {
 			log.Print(err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-
 		storage.CreateTodo(t)
+
+		response, _ := json.Marshal(CreatedResponse("Todo Created"))
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write(response)
 	}
-}
-
-// Swagger documentation models
-
-// Generic error message returned as a string
-// swagger:response errorResponse
-type errorResponseWrapper struct {
-	// Description of the error
-	// in: body
-	Body GenericError
-}
-
-// Validation errors defined as an array of strings
-// swagger:response errorValidation
-type errorValidationWrapper struct {
-	// Collection of the errors
-	// in: body
-	Body ValidationError
-}
-
-// Data structure representing a single Todo List Item
-// swagger:response todoResponse
-type todoResponseWrapper struct {
-	// Newly created Todo List Item
-	// in: body
-	Body Todo
-}
-
-// Data structure representing a List of Todo List Items
-// swagger:response todosResponse
-type todosResponseWrapper struct {
-	// Newly created Todo List Item
-	// in: body
-	Body []Todo
-}
-
-// No content is returned by this API endpoint
-// swagger:response noContentResponse
-type noContentResponseWrapper struct {
-}
-
-// swagger:parameters deleteTodo
-type productIDParamsWrapper struct {
-	// The id of the Todo List Item for which the operation relates
-	// in: path
-	// required: true
-	Id int `json:"id"`
 }
