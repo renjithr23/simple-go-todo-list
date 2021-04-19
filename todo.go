@@ -24,7 +24,6 @@ import (
 // GetTodos handles GET requests and returns all current Todos
 func GetTodos(storage Storage) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-
 		todos, err := storage.ListTodo()
 
 		w.Header().Set("Content-Type", "application/json")
@@ -93,7 +92,7 @@ func DeleteTodo(storage Storage) func(w http.ResponseWriter, r *http.Request) {
 // Schemes: http
 func AddTodo(storage Storage) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-
+		w.Header().Set("Content-Type", "application/json")
 		var t Todo
 		err := json.NewDecoder(r.Body).Decode(&t)
 
