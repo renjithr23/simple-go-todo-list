@@ -42,6 +42,43 @@ func GetTodos(storage Storage) func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// swagger:route GET /Todo/{id} todos getTodo
+// Gets a Todo item from it's Id
+// Consumes:
+// - application/json
+// produces:
+// - application/json
+// Schemes: http
+// responses:
+//	200: todosResponse
+//  404: errorResponse
+//  501: errorResponse
+
+// GetTodo handles GET requests and returns a Todo based on an Id
+func GetTodo(storage Storage) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		id, _ := strconv.Atoi(vars["id"])
+
+		todos, err := storage.GetTodo(id)
+
+		w.Header().Set("Content-Type", "application/json")
+		response, _ := json.Marshal(todos)
+		if err != nil {
+			log.Print(err)
+			err_response, _ := json.Marshal(BadRequestError("Todo with ID " + strconv.Itoa(id) + " does not exist"))
+
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write(err_response)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		w.Write(response)
+		
+	}
+}
+
 // swagger:route DELETE /Todo/{id} todos deleteTodo
 // Deletes a Todo
 // Consumes:

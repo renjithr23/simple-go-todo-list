@@ -43,6 +43,7 @@ func main() {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/todos", GetTodos(stg)).Methods("GET")
+	r.HandleFunc("/todos/{id}", GetTodo(stg)).Methods("GET")
 	r.HandleFunc("/todos/{id}", DeleteTodo(stg)).Methods("DELETE")
 	r.HandleFunc("/todos", AddTodo(stg)).Methods("POST")
 	http.Handle("/", r)
